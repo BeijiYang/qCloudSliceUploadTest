@@ -14,7 +14,9 @@ var getAuthorization = function (options, callback) {
     var method = (options.method || 'get').toLowerCase();
     var pathname = options.pathname || '/';
 
-    axios.get(`${config.api}/auth`)
+    let argu = { method, pathname}
+    console.log(argu);
+    axios.post(`${config.api}/auth`, argu)
     .then(
       res => {
         console.log("9999999999")
