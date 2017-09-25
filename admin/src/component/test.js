@@ -212,7 +212,6 @@ class Test extends Component {
           var AppId = config.AppId;
           var Bucket = config.Bucket;
           if (config.Bucket.indexOf('-') > -1) {
-            console.log(">>>>>");
             var arr = config.Bucket.split('-');
             Bucket = arr[0];
             AppId = arr[1];
@@ -222,8 +221,8 @@ class Test extends Component {
             Region: config.Region,
             Key: newName,
             // CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
-            CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + this.state.oldName,
-            MetadataDirective : 'Replaced'
+            CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + encodeURI(this.state.oldName),
+            MetadataDirective : 'Replaced',
           }, function (err, data) {
             if(err) {
               console.log(err);
@@ -416,8 +415,8 @@ class Test extends Component {
             <Button onClick={onDelete}>删除</Button>
             <span className="ant-divider" />
             {/* <Button onClick={onRename}>重命名</Button> */}
-            <div>
-              <Button type="primary" onClick={this.showModal} data-oldName={record.Key}>New Collection</Button>
+            {/* <div> */}
+              <Button onClick={this.showModal} data-oldName={record.Key}>重命名</Button>
               <CollectionCreateForm
                 ref={this.saveFormRef}
                 visible={this.state.visible}
@@ -425,7 +424,7 @@ class Test extends Component {
                 onCreate={this.handleCreate}
                 oldName={this.state.oldName}
               />
-            </div>
+            {/* </div> */}
           </span>
         )
       },
