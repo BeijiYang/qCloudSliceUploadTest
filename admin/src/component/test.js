@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import config from '../config'
-import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input} from 'antd'
+import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input, Button} from 'antd'
 import COS from 'cos-js-sdk-v5'
-import TableColumns from './tableColumns'
+// import TableColumns from './tableColumns'
+import moment from 'moment'
 const Dragger = Upload.Dragger;
 
 
@@ -12,35 +13,35 @@ const Dragger = Upload.Dragger;
 var getAuthorization = function (options, callback) {
   console.log(options);
     //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
-    var method = (options.method || 'get').toLowerCase();
-    var pathname = options.pathname || '/';
+    // var method = (options.method || 'get').toLowerCase();
+    // var pathname = options.pathname || '/';
+    //
+    // let argu = { method, pathname}
+    // console.log(argu);
+    // axios.post(`${config.api}/auth`, argu)
+    // .then(
+    //   res => {
+    //     console.log("9999999999")
+    //     console.log(res.data)
+    //     const authorization = res.data
+    //     callback(authorization);
+    //   }
+    // )
+    // .catch(err => {
+    //   if (err) {
+    //     console.log(err)
+    //   }
+    // })
 
-    let argu = { method, pathname}
-    console.log(argu);
-    axios.post(`${config.api}/auth`, argu)
-    .then(
-      res => {
-        console.log("9999999999")
-        console.log(res.data)
-        const authorization = res.data
-        callback(authorization);
-      }
-    )
-    .catch(err => {
-      if (err) {
-        console.log(err)
-      }
-    })
-
-    // // 方法二，直接在前端利用 SecretId 和 SecretKey 计算签名，适合前端调试使用，不提倡在前端暴露 SecretId 和 SecretKey
-    // var authorization = COS.getAuthorization({
-    //   SecretId: `${config.SecretId}`,
-    //   SecretKey: `${config.SecretKey}`,
-    //   method: (options.method || 'get').toLowerCase(),
-    //   pathname: options.pathname || '/',
-    // });
-    // callback(authorization);
-    // console.log(authorization);
+    // 方法二，直接在前端利用 SecretId 和 SecretKey 计算签名，适合前端调试使用，不提倡在前端暴露 SecretId 和 SecretKey
+    var authorization = COS.getAuthorization({
+      SecretId: `${config.SecretId}`,
+      SecretKey: `${config.SecretKey}`,
+      method: (options.method || 'get').toLowerCase(),
+      pathname: options.pathname || '/',
+    });
+    callback(authorization);
+    console.log(authorization);
 
 };
 
@@ -69,7 +70,8 @@ class Test extends Component {
       name: '文件名',
       progress: [],
       folder: '',
-      inputClass: ''
+      inputClass: '',
+      disable: false
     }
   }
 
@@ -137,6 +139,93 @@ class Test extends Component {
 
   render () {
     let that = this
+
+    //antd表格部分
+    const TableColumns = [{
+      title: '名称',
+      dataIndex: 'Key',
+      key: 'Key',
+    }, {
+      title: '更新时间',
+      dataIndex: 'LastModified',
+      key: 'LastModified',
+      render: (text) => {
+        return <span>{moment(text).format('YYYY-MM-DD kk:mm:ss')}</span>
+      }
+    }, {
+      title: '操作',
+      dataIndex: 'ETag',
+      key: 'ETag',
+      render: (text, record, index) => {
+        const onRename = function () {
+          console.log('rename');
+        //   console.log(record);
+        //   const renameParams = {
+        //     Bucket: `${config.Bucket}`,
+        //     Region: `${config.Region}`,                       /* 必须 */
+        //     // Key : record.Key,                           /* 必须 */
+        //     Key : record.Key,
+        //     CopySource : '',
+        //     // MetadataDirective : 'Replaced',
+        //     // ContentType : 'application/xml'
+        //     // testbucket-1252891333.cos.ap-beijing.myqcloud.com/aabbcc?1
+        //     // testbucket-1252891333.cos.ap-beijing.myqcloud.com/aabbcc?1
+        //   };
+        //
+        //   cos.putObjectCopy(renameParams, function(err, data) {
+        //     if(err) {
+        //       console.log(err);
+        //     } else {
+        //       console.log(data);
+        //     }
+        //   });
+        }
+
+        const onDelete = function () {
+
+          const delParams = {
+            Bucket: `${config.Bucket}`,
+            Region: `${config.Region}`,                       /* 必须 */
+            Key : record.Key                                  /* 必须 */
+          }
+
+          cos.deleteObject(delParams, function(err, data) {
+            if(err) {
+              console.log(err);
+              message.error(`${record.Key} 删除失败`)
+            } else {
+              console.log(data);
+              message.success(`已删除：${record.Key}`)
+              axios.get(`${config.api}/bucket`)
+              .then(
+                res => {
+                  that.setState({
+                    contents: res.data.Contents
+                  })
+                  console.log(that.state.contents)
+                }
+              )
+              .catch(err => {
+                if (err.response) {
+                  console.log(err.response.data.err)
+                } else {
+                  console.log(err)
+                }
+              })
+            }
+          });
+        }
+
+        return (
+          <span>
+            <Button onClick={onDelete}>删除</Button>
+            <span className="ant-divider" />
+            <Button onClick={onRename}>重命名</Button>
+          </span>
+        )
+      },
+    }]
+
     //antd拖拽组件部分
     const props = {
       name: 'file',
@@ -250,7 +339,7 @@ class Test extends Component {
 
       },//onchange结束
     }
-    
+
     return (
       <Layout style={{ minHeight: '100vh', width: '100%' }}>
 
