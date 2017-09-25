@@ -10,7 +10,8 @@ const Dragger = Upload.Dragger;
 //腾讯cos js-sdk配置
 // 获取鉴权签名的回调函数
 var getAuthorization = function (options, callback) {
-    // //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
+  console.log(options);
+    //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
     var method = (options.method || 'get').toLowerCase();
     var pathname = options.pathname || '/';
 
@@ -22,7 +23,7 @@ var getAuthorization = function (options, callback) {
         console.log("9999999999")
         console.log(res.data)
         const authorization = res.data
-        // callback(authorization);
+        callback(authorization);
       }
     )
     .catch(err => {
@@ -31,15 +32,15 @@ var getAuthorization = function (options, callback) {
       }
     })
 
-    // 方法二，直接在前端利用 SecretId 和 SecretKey 计算签名，适合前端调试使用，不提倡在前端暴露 SecretId 和 SecretKey
-    var authorization = COS.getAuthorization({
-      SecretId: `${config.SecretId}`,
-      SecretKey: `${config.SecretKey}`,
-      method: (options.method || 'get').toLowerCase(),
-      pathname: options.pathname || '/',
-    });
-    callback(authorization);
-    console.log(authorization);
+    // // 方法二，直接在前端利用 SecretId 和 SecretKey 计算签名，适合前端调试使用，不提倡在前端暴露 SecretId 和 SecretKey
+    // var authorization = COS.getAuthorization({
+    //   SecretId: `${config.SecretId}`,
+    //   SecretKey: `${config.SecretKey}`,
+    //   method: (options.method || 'get').toLowerCase(),
+    //   pathname: options.pathname || '/',
+    // });
+    // callback(authorization);
+    // console.log(authorization);
 
 };
 
@@ -248,8 +249,8 @@ class Test extends Component {
         // }
 
       },//onchange结束
-    };
-
+    }
+    
     return (
       <Layout style={{ minHeight: '100vh', width: '100%' }}>
 
@@ -269,6 +270,7 @@ class Test extends Component {
             <Table columns={TableColumns}
             dataSource={this.state.contents}
             rowKey={item => item.LastModified}
+            // onDelete = {this.onDelete}
             />
 
           </div>
