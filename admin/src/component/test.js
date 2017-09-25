@@ -1,12 +1,15 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import config from '../config'
-import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input, Button, Modal} from 'antd'
+import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input, Button, Modal,Form} from 'antd'
 import COS from 'cos-js-sdk-v5'
 // import TableColumns from './tableColumns'
 import moment from 'moment'
+// import CollectionsPage from './renameModal'
+// import CollectionCreateForm from './renameModal'
 const Dragger = Upload.Dragger
 const confirm = Modal.confirm
+const FormItem = Form.Item
 
 
 //腾讯cos js-sdk配置
@@ -62,6 +65,40 @@ var cos = new COS(params);
 
 const { Header, Content, Footer } = Layout
 
+// Modal
+const CollectionCreateForm = Form.create()(
+  (props) => {
+    console.log(props.oldName);
+    const { visible, onCancel, onCreate, form } = props;
+    const { getFieldDecorator } = form;
+    return (
+      <Modal
+        visible={visible}
+        title="重命名文件"
+        okText="确定"
+        onCancel={onCancel}
+        onOk={onCreate}
+      >
+        <Form layout="vertical">
+          <FormItem label="新名称">
+            {getFieldDecorator('newName', {
+              rules: [{
+                required: true,
+                message: '不可与原名称相同',
+                validator: (rule, value, cb) => (
+                  (!value || value === props.oldName) ? cb(true) : cb()
+                ),
+              }],
+            })(
+              <Input placeholder='不可与原名称相同' />
+            )}
+          </FormItem>
+        </Form>
+      </Modal>
+    );
+  }
+);
+
 class Test extends Component {
   constructor (props, context) {
     super(props, context)
@@ -72,7 +109,8 @@ class Test extends Component {
       progress: [],
       folder: '',
       inputClass: '',
-      disable: false
+      disable: false,
+      oldName: ''
     }
   }
 
@@ -138,32 +176,39 @@ class Test extends Component {
     }
   }
 
+    // Modal 逻辑
+    showModal = (e) => {
+      console.log('showModal');
+      console.log(e.target.dataset);
+      this.setState({
+         visible: true,
+         oldName: e.target.dataset.oldname
+       })
+    }
+    handleCancel = () => {
+      console.log('handleCancel')
+      this.setState({ visible: false });
+    }
+    handleCreate = () => {
+      console.log('handleCreate');
+      let that = this
+      const form = this.form
 
-  render () {
-    let that = this
+      form.validateFields((err, values) => {
 
-    //antd表格部分
-    const TableColumns = [{
-      title: '名称',
-      dataIndex: 'Key',
-      key: 'Key',
-    }, {
-      title: '更新时间',
-      dataIndex: 'LastModified',
-      key: 'LastModified',
-      render: (text) => {
-        return <span>{moment(text).format('YYYY-MM-DD kk:mm:ss')}</span>
-      }
-    }, {
-      title: '操作',
-      dataIndex: 'ETag',
-      key: 'ETag',
-      render: (text, record, index) => {
-        const onRename = function () {
+        if (err) {
+          return
+        }
+
+        console.log('Received values of form: ', values);
+
+        let newName = values.newName
+
+        // 重命名
+        // const onRename = function () {
+
+          // 创建源文件副本，命名为新名字
           console.log('rename');
-        //   console.log(record);
-
-        // function putObjectCopy() {
           var AppId = config.AppId;
           var Bucket = config.Bucket;
           if (config.Bucket.indexOf('-') > -1) {
@@ -175,8 +220,9 @@ class Test extends Component {
           cos.putObjectCopy({
             Bucket: config.Bucket,
             Region: config.Region,
-            Key: 'OOOXXX',
-            CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
+            Key: newName,
+            // CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
+            CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + this.state.oldName,
             MetadataDirective : 'Replaced'
           }, function (err, data) {
             if(err) {
@@ -186,10 +232,11 @@ class Test extends Component {
               console.log(data);
               // message.success(`已：${record.Key}`)
 
+              // 删除源文件
               const delParams = {
                 Bucket: `${config.Bucket}`,
                 Region: `${config.Region}`,                       /* 必须 */
-                Key : record.Key                                  /* 必须 */
+                Key : `${that.state.oldName}`                                  /* 必须 */
               };
 
               cos.deleteObject(delParams, function(err, data) {
@@ -198,6 +245,8 @@ class Test extends Component {
                   message.error('源文件删除失败')
                 } else {
                   console.log(data);
+
+                  // 刷新列表
                   axios.get(`${config.api}/bucket`)
                   .then(
                     res => {
@@ -219,8 +268,98 @@ class Test extends Component {
               });
             }
           });
-        //  }
-        }
+        // }
+
+        form.resetFields();
+        this.setState({ visible: false });
+      });
+    }
+    saveFormRef = (form) => {
+      console.log('saveFormRef')
+      this.form = form;
+    }
+
+
+  render () {
+    let that = this
+
+    //antd表格部分
+    const TableColumns = [{
+      title: '名称',
+      dataIndex: 'Key',
+      key: 'Key',
+    }, {
+      title: '更新时间',
+      dataIndex: 'LastModified',
+      key: 'LastModified',
+      render: (text) => {
+        return <span>{moment(text).format('YYYY-MM-DD kk:mm:ss')}</span>
+      }
+    }, {
+      title: '操作',
+      dataIndex: 'ETag',
+      key: 'ETag',
+      render: (text, record, index) => {
+
+        // // 重命名
+        // const onRename = function () {
+        //   console.log('rename');
+        //   var AppId = config.AppId;
+        //   var Bucket = config.Bucket;
+        //   if (config.Bucket.indexOf('-') > -1) {
+        //     console.log(">>>>>");
+        //     var arr = config.Bucket.split('-');
+        //     Bucket = arr[0];
+        //     AppId = arr[1];
+        //   }
+        //   cos.putObjectCopy({
+        //     Bucket: config.Bucket,
+        //     Region: config.Region,
+        //     Key: 'OOOXXX',
+        //     CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
+        //     MetadataDirective : 'Replaced'
+        //   }, function (err, data) {
+        //     if(err) {
+        //       console.log(err);
+        //       message.error('副本创建失败')
+        //     } else {
+        //       console.log(data);
+        //       // message.success(`已：${record.Key}`)
+        //
+        //       const delParams = {
+        //         Bucket: `${config.Bucket}`,
+        //         Region: `${config.Region}`,                       /* 必须 */
+        //         Key : record.Key                                  /* 必须 */
+        //       };
+        //
+        //       cos.deleteObject(delParams, function(err, data) {
+        //         if(err) {
+        //           console.log(err);
+        //           message.error('源文件删除失败')
+        //         } else {
+        //           console.log(data);
+        //           axios.get(`${config.api}/bucket`)
+        //           .then(
+        //             res => {
+        //               that.setState({
+        //                 contents: res.data.Contents
+        //               })
+        //               console.log(that.state.contents)
+        //             }
+        //           )
+        //           .catch(err => {
+        //             if (err.response) {
+        //               console.log(err.response.data.err)
+        //             } else {
+        //               console.log(err)
+        //             }
+        //           })
+        //           message.success('重命名成功')
+        //         }
+        //       });
+        //     }
+        //   });
+        // }
 
         const onDelete = function () {
           // showDeleteConfirm() {
@@ -276,7 +415,17 @@ class Test extends Component {
           <span>
             <Button onClick={onDelete}>删除</Button>
             <span className="ant-divider" />
-            <Button onClick={onRename}>重命名</Button>
+            {/* <Button onClick={onRename}>重命名</Button> */}
+            <div>
+              <Button type="primary" onClick={this.showModal} data-oldName={record.Key}>New Collection</Button>
+              <CollectionCreateForm
+                ref={this.saveFormRef}
+                visible={this.state.visible}
+                onCancel={this.handleCancel}
+                onCreate={this.handleCreate}
+                oldName={this.state.oldName}
+              />
+            </div>
           </span>
         )
       },
@@ -420,6 +569,8 @@ class Test extends Component {
 
           </div>
         </Content>
+
+        {/* <CollectionsPage oldName={'oldName'}/> */}
 
         {/* 进度条 */}
         {
