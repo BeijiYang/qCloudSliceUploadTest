@@ -315,7 +315,7 @@ class Test extends Component {
         //     Bucket: config.Bucket,
         //     Region: config.Region,
         //     Key: 'OOOXXX',
-        //     CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
+        //     CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + encodeURI(record.Key),
         //     MetadataDirective : 'Replaced'
         //   }, function (err, data) {
         //     if(err) {
