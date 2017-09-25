@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import config from '../config'
-import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input, Button} from 'antd'
+import { Layout, Breadcrumb, Icon, Table, Upload,message ,Progress, Input, Button, Modal} from 'antd'
 import COS from 'cos-js-sdk-v5'
 // import TableColumns from './tableColumns'
 import moment from 'moment'
-const Dragger = Upload.Dragger;
+const Dragger = Upload.Dragger
+const confirm = Modal.confirm
 
 
 //腾讯cos js-sdk配置
@@ -13,35 +14,35 @@ const Dragger = Upload.Dragger;
 var getAuthorization = function (options, callback) {
   console.log(options);
     //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
-    // var method = (options.method || 'get').toLowerCase();
-    // var pathname = options.pathname || '/';
-    //
-    // let argu = { method, pathname}
-    // console.log(argu);
-    // axios.post(`${config.api}/auth`, argu)
-    // .then(
-    //   res => {
-    //     console.log("9999999999")
-    //     console.log(res.data)
-    //     const authorization = res.data
-    //     callback(authorization);
-    //   }
-    // )
-    // .catch(err => {
-    //   if (err) {
-    //     console.log(err)
-    //   }
-    // })
+    var method = (options.method || 'get').toLowerCase();
+    var pathname = options.pathname || '/';
+
+    let argu = { method, pathname}
+    console.log(argu);
+    axios.post(`${config.api}/auth`, argu)
+    .then(
+      res => {
+        console.log("9999999999")
+        console.log(res.data)
+        const authorization = res.data
+        callback(authorization);
+      }
+    )
+    .catch(err => {
+      if (err) {
+        console.log(err)
+      }
+    })
 
     // 方法二，直接在前端利用 SecretId 和 SecretKey 计算签名，适合前端调试使用，不提倡在前端暴露 SecretId 和 SecretKey
-    var authorization = COS.getAuthorization({
-      SecretId: `${config.SecretId}`,
-      SecretKey: `${config.SecretKey}`,
-      method: (options.method || 'get').toLowerCase(),
-      pathname: options.pathname || '/',
-    });
-    callback(authorization);
-    console.log(authorization);
+    // var authorization = COS.getAuthorization({
+    //   SecretId: `${config.SecretId}`,
+    //   SecretKey: `${config.SecretKey}`,
+    //   method: (options.method || 'get').toLowerCase(),
+    //   pathname: options.pathname || '/',
+    // });
+    // callback(authorization);
+    // console.log(authorization);
 
 };
 
@@ -137,6 +138,7 @@ class Test extends Component {
     }
   }
 
+
   render () {
     let that = this
 
@@ -160,60 +162,76 @@ class Test extends Component {
         const onRename = function () {
           console.log('rename');
         //   console.log(record);
-        //   const renameParams = {
-        //     Bucket: `${config.Bucket}`,
-        //     Region: `${config.Region}`,                       /* 必须 */
-        //     // Key : record.Key,                           /* 必须 */
-        //     Key : record.Key,
-        //     CopySource : '',
-        //     // MetadataDirective : 'Replaced',
-        //     // ContentType : 'application/xml'
-        //     // testbucket-1252891333.cos.ap-beijing.myqcloud.com/aabbcc?1
-        //     // testbucket-1252891333.cos.ap-beijing.myqcloud.com/aabbcc?1
-        //   };
-        //
-        //   cos.putObjectCopy(renameParams, function(err, data) {
-        //     if(err) {
-        //       console.log(err);
-        //     } else {
-        //       console.log(data);
-        //     }
-        //   });
+
+        // function putObjectCopy() {
+          var AppId = config.AppId;
+          var Bucket = config.Bucket;
+          if (config.Bucket.indexOf('-') > -1) {
+            console.log(">>>>>");
+            var arr = config.Bucket.split('-');
+            Bucket = arr[0];
+            AppId = arr[1];
+          }
+          cos.putObjectCopy({
+            Bucket: config.Bucket,
+            Region: config.Region,
+            Key: '999',
+            CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
+            MetadataDirective : 'Replaced'
+          }, function (err, data) {
+            console.log(err || data);
+          });
+        //  }
         }
 
         const onDelete = function () {
-
-          const delParams = {
-            Bucket: `${config.Bucket}`,
-            Region: `${config.Region}`,                       /* 必须 */
-            Key : record.Key                                  /* 必须 */
-          }
-
-          cos.deleteObject(delParams, function(err, data) {
-            if(err) {
-              console.log(err);
-              message.error(`${record.Key} 删除失败`)
-            } else {
-              console.log(data);
-              message.success(`已删除：${record.Key}`)
-              axios.get(`${config.api}/bucket`)
-              .then(
-                res => {
-                  that.setState({
-                    contents: res.data.Contents
-                  })
-                  console.log(that.state.contents)
+          // showDeleteConfirm() {
+            confirm({
+              title: `确认删除 ${record.Key} ？`,
+              content: '删除之后无法恢复',
+              okText: 'Yes',
+              okType: 'danger',
+              cancelText: 'No',
+              onOk() {
+                console.log('OK')
+                const delParams = {
+                  Bucket: `${config.Bucket}`,
+                  Region: `${config.Region}`,                       /* 必须 */
+                  Key : record.Key                                  /* 必须 */
                 }
-              )
-              .catch(err => {
-                if (err.response) {
-                  console.log(err.response.data.err)
-                } else {
-                  console.log(err)
-                }
-              })
-            }
-          });
+
+                cos.deleteObject(delParams, function(err, data) {
+                  if(err) {
+                    console.log(err);
+                    message.error(`${record.Key} 删除失败`)
+                  } else {
+                    console.log(data);
+                    message.success(`已删除：${record.Key}`)
+                    axios.get(`${config.api}/bucket`)
+                    .then(
+                      res => {
+                        that.setState({
+                          contents: res.data.Contents
+                        })
+                        console.log(that.state.contents)
+                      }
+                    )
+                    .catch(err => {
+                      if (err.response) {
+                        console.log(err.response.data.err)
+                      } else {
+                        console.log(err)
+                      }
+                    })
+                  }
+                });
+
+              },
+              onCancel() {
+                console.log('Cancel');
+              },
+            });
+          // }
         }
 
         return (
