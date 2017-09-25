@@ -175,11 +175,49 @@ class Test extends Component {
           cos.putObjectCopy({
             Bucket: config.Bucket,
             Region: config.Region,
-            Key: '999',
+            Key: 'OOOXXX',
             CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + record.Key,
             MetadataDirective : 'Replaced'
           }, function (err, data) {
-            console.log(err || data);
+            if(err) {
+              console.log(err);
+              message.error('副本创建失败')
+            } else {
+              console.log(data);
+              // message.success(`已：${record.Key}`)
+
+              const delParams = {
+                Bucket: `${config.Bucket}`,
+                Region: `${config.Region}`,                       /* 必须 */
+                Key : record.Key                                  /* 必须 */
+              };
+
+              cos.deleteObject(delParams, function(err, data) {
+                if(err) {
+                  console.log(err);
+                  message.error('源文件删除失败')
+                } else {
+                  console.log(data);
+                  axios.get(`${config.api}/bucket`)
+                  .then(
+                    res => {
+                      that.setState({
+                        contents: res.data.Contents
+                      })
+                      console.log(that.state.contents)
+                    }
+                  )
+                  .catch(err => {
+                    if (err.response) {
+                      console.log(err.response.data.err)
+                    } else {
+                      console.log(err)
+                    }
+                  })
+                  message.success('重命名成功')
+                }
+              });
+            }
           });
         //  }
         }
