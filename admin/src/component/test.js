@@ -15,7 +15,7 @@ const FormItem = Form.Item
 //腾讯cos js-sdk配置
 // 获取鉴权签名的回调函数
 var getAuthorization = function (options, callback) {
-  console.log(options);
+  // console.log(options);
     //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
     // var method = (options.method || 'get').toLowerCase();
     // var pathname = options.pathname || '/';
@@ -26,8 +26,8 @@ var getAuthorization = function (options, callback) {
     axios.post(`${config.api}/auth`, options)
     .then(
       res => {
-        console.log("9999999999")
-        console.log(res.data)
+        // console.log("9999999999")
+        // console.log(res.data)
         const authorization = res.data
         callback(authorization);
       }
@@ -390,7 +390,7 @@ class Test extends Component {
                         that.setState({
                           contents: res.data.Contents
                         })
-                        console.log(that.state.contents)
+                        // console.log(that.state.contents)
                       }
                     )
                     .catch(err => {
@@ -440,23 +440,61 @@ class Test extends Component {
       onChange(info) {
         const status = info.file.status;
         if (status !== 'uploading') {
-          // console.log(info.file, info.fileList);
+          console.log(info.file);
+          console.log(info.fileList);
           //就是要通过antd，拖拽后拿到File对象
           let file = info.file.originFileObj
+          console.log(file);
 
-          //为新拖拽的文件生成一个空的进度条
+
+          // 为新拖拽的文件生成一个空的进度条 +++++++++++
           let uploadObj = {
             percent: 0,
-            name: info.file.originFileObj.name,
-            status: 'normal'
+            name: file.name,
+            status: 'normal',
+            uid: file.uid
           }
+          console.log(that.state.progress);
           let [ ...clonedProgress ] = that.state.progress
+
 
           clonedProgress.push(uploadObj)
 
           that.setState({
             progress: clonedProgress
           })
+          console.log(that.state.progress);
+          // ++++++++
+
+          // // 多个文件
+          // info.fileList.map(
+          //   item => {
+          //
+          //
+          //     let uploadObj = {
+          //       percent: 0,
+          //       name: file.name,
+          //       status: 'normal',
+          //       uid: file.uid
+          //     }
+          //
+          //     console.log(that.state.progress);
+          //
+          //     let [ ...clonedProgress ] = that.state.progress
+          //
+          //
+          //     clonedProgress.push(uploadObj)
+          //
+          //     that.setState({
+          //       progress: clonedProgress
+          //     })
+          //     console.log(that.state.progress);
+          //
+          //
+          //   }
+          // )
+
+
 
           //尝试在回调中引入cos-js-sdk 分块上传
           var params = {
@@ -482,14 +520,59 @@ class Test extends Component {
               //打印内容：
               // test.js:160 {"loaded":5947392,"total":11074706,"speed":5198769.23,"percent":0.53}
 
-              //进度条信息
-              let percent = progressData.percent*100
+              //进度条信息++++++++++
+              // let percent = progressData.percent*100
+              //
+              // //运用数组栈方法来更新进度信息
+              // let [ ...clonedTempProgress ] = that.state.progress
+              // console.log(that.state.progress);
+              //
+              // let newUploadFileInfo = clonedTempProgress.pop()
+              // //更新进度
+              // newUploadFileInfo.percent = percent
+              //
+              // if (percent < 100) {
+              //   newUploadFileInfo.status = 'active'
+              // } else if (percent === 100) {
+              //   newUploadFileInfo.status = 'success'
+              // }
+              //
+              // clonedTempProgress.push(newUploadFileInfo)
+              //
+              // that.setState({
+              //   progress: clonedTempProgress
+              // })
+              // console.log(that.state.progress)
+              // ++++++++++++++
 
-              //运用数组栈方法来更新进度信息
+              //当多个文件--------
               let [ ...clonedTempProgress ] = that.state.progress
 
-              let newUploadFileInfo = clonedTempProgress.pop()
-              //更新进度
+              //筛选出本次上传进度信息的主人 以及它在数组中的index
+              let newUploadFileInfo = clonedTempProgress.find(
+                item => item.uid === file.uid
+              )
+              let thisFilesIndex = clonedTempProgress.findIndex(
+                item => item.uid === file.uid
+              )
+
+              console.log(newUploadFileInfo);
+              console.log(thisFilesIndex);
+
+              let percent = progressData.percent*100
+
+              // thisFilesProgress.percent = percent
+              // //运用数组栈方法来更新进度信息
+              // let [ ...clonedTempProgress ] = that.state.progress
+              // console.log(that.state.progress);
+              //
+              // let newUploadFileInfo = clonedTempProgress.filter(
+              //   item => {
+              //     return item.uid === file.uid
+              //   }
+              // )
+
+              // 精确更新进度
               newUploadFileInfo.percent = percent
 
               if (percent < 100) {
@@ -498,17 +581,17 @@ class Test extends Component {
                 newUploadFileInfo.status = 'success'
               }
 
-              clonedTempProgress.push(newUploadFileInfo)
+              // clonedTempProgress.push(newUploadFileInfo)
+              clonedTempProgress[thisFilesIndex] = newUploadFileInfo
 
               that.setState({
                 progress: clonedTempProgress
               })
-              // clonedProgress.push(progressObj)
-              //
-              // that.setState({
-              //   progress: clonedProgress
-              // })
-              // console.log(that.state.progress)
+              console.log(that.state.progress)
+
+
+              // --------
+
             }
           };
           console.log(typeof file);
@@ -580,7 +663,7 @@ class Test extends Component {
 
             <Table columns={TableColumns}
             dataSource={this.state.contents}
-            rowKey={item => item.LastModified}
+            rowKey={item => item.ETag}
             // onDelete = {this.onDelete}
             />
 
