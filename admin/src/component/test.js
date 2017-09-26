@@ -17,12 +17,13 @@ const FormItem = Form.Item
 var getAuthorization = function (options, callback) {
   console.log(options);
     //  方法一，将 COS 操作的 method 和 pathname 传递给服务端，由服务端计算签名返回（推荐）
-    var method = (options.method || 'get').toLowerCase();
-    var pathname = options.pathname || '/';
-
-    let argu = { method, pathname}
-    console.log(argu);
-    axios.post(`${config.api}/auth`, argu)
+    // var method = (options.method || 'get').toLowerCase();
+    // var pathname = options.pathname || '/';
+    //
+    // let argu = { method, pathname}
+    // console.log(argu);
+    // axios.post(`${config.api}/auth`, argu)
+    axios.post(`${config.api}/auth`, options)
     .then(
       res => {
         console.log("9999999999")
@@ -531,6 +532,23 @@ class Test extends Component {
               //上传成功
               console.log(data);
               //data.Location: "testbucket-1252891333.ap-beijing.myqcloud.com/gg.jpg"
+
+              message.success(`成功上传`)
+
+              //更新obj列表
+              axios.get(`${config.api}/bucket`)
+              .then(
+                res => {
+                  that.setState({
+                    contents: res.data.Contents
+                  })
+                  console.log(that.state.contents)
+                }
+              )
+              .catch(err => {
+                console.log(err)
+              })
+
             }
           });
           //cos-js-sdk 分块上传 结束
