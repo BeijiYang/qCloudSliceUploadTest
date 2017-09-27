@@ -157,6 +157,9 @@ class Test extends Component {
     //分开判断，便于精确提示用户
     if (folderName === '') {
       message.success('文件将上传至bucket顶层')
+      this.setState({
+        folder: ``
+      })
     } else if (folderName.length > 20) {
       message.error('最多支持 20 个字符')
       this.setState({
