@@ -264,6 +264,10 @@ class Test extends Component {
                     }
                   })
                   message.success('重命名成功')
+                  
+                  that.setState({
+                    oldName: ''
+                  })
                 }
               });
             }
