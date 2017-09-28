@@ -267,7 +267,7 @@ class Test extends Component {
                     }
                   })
                   message.success('重命名成功')
-                  
+
                   that.setState({
                     oldName: ''
                   })
@@ -454,7 +454,7 @@ class Test extends Component {
           console.log(file);
 
 
-          // 为新拖拽的文件生成一个空的进度条 +++++++++++
+          // 为新拖拽的文件生成一个空的进度条
           let uploadObj = {
             percent: 0,
             name: file.name,
@@ -471,36 +471,6 @@ class Test extends Component {
             progress: clonedProgress
           })
           console.log(that.state.progress);
-          // ++++++++
-
-          // // 多个文件
-          // info.fileList.map(
-          //   item => {
-          //
-          //
-          //     let uploadObj = {
-          //       percent: 0,
-          //       name: file.name,
-          //       status: 'normal',
-          //       uid: file.uid
-          //     }
-          //
-          //     console.log(that.state.progress);
-          //
-          //     let [ ...clonedProgress ] = that.state.progress
-          //
-          //
-          //     clonedProgress.push(uploadObj)
-          //
-          //     that.setState({
-          //       progress: clonedProgress
-          //     })
-          //     console.log(that.state.progress);
-          //
-          //
-          //   }
-          // )
-
 
 
           //尝试在回调中引入cos-js-sdk 分块上传
@@ -509,17 +479,6 @@ class Test extends Component {
             Region: `${config.Region}`,                      /* 必须 */
             Key: `${that.state.folder}${file.name}`,
             Body: file,                                     /* 必须 */
-            // Body: 'File || Blob',
-            // SliceSize: 'STRING_VALUE',                      /* 非必须 */
-            // StorageClass: 'STRING_VALUE',                   /* 非必须 */
-            // AsyncLimit: 'NUMBER',                           /* 非必须 */
-            // TaskReady: function(taskId) {                   /* 非必须 */
-            //   console.log(taskId);
-            // },
-            // onHashProgress: function (progressData) {       /* 非必须 */
-            //   console.log(JSON.stringify(progressData));
-            // },
-
 
 
             onProgress: function (progressData) {           /* 非必须 */
