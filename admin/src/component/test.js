@@ -453,6 +453,20 @@ class Test extends Component {
           let file = info.file.originFileObj
           console.log(file);
 
+          // 检测同路径同名对象
+          let fileAlreadyExist = that.state.contents.filter(
+            item => {
+              return file.name === item.Key
+            }
+          )
+          if (fileAlreadyExist.length !== 0) {
+            message.error(`已存在同名文件，${file.name}未上传`)
+            return
+            console.log("++++++++++++++++++++++++");
+            console.log(fileAlreadyExist);
+            // console.log(file);
+          }
+
 
           // 为新拖拽的文件生成一个空的进度条
           let uploadObj = {
