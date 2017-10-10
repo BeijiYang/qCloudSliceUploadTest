@@ -466,17 +466,28 @@ class Test extends Component {
           cos.sliceUploadFile(params, function(err, data) {
             if(err) {
               console.log(err);
-              //运用数组栈方法来使进度条显示上传出错
+
+              // 进度条报错样式
               let [ ...clonedTempProgress ] = that.state.progress
-              let newUploadFileInfo = clonedTempProgress.pop()
+              // es6: 筛选出本次上传进度信息的主人 以及它在数组中的index
+              let newUploadFileInfo = clonedTempProgress.find(
+                item => item.uid === file.uid
+              )
+              let thisFilesIndex = clonedTempProgress.findIndex(
+                item => item.uid === file.uid
+              )
+
               //更新进度
               newUploadFileInfo.status = 'exception'
-              clonedTempProgress.push(newUploadFileInfo)
+
+              clonedTempProgress[thisFilesIndex] = newUploadFileInfo
 
               that.setState({
                 progress: clonedTempProgress
               })
-            } else {
+              // 进度条报错结束
+
+            }  else {
               //上传成功
               console.log(data);
               //data.Location: "testbucket-1252891333.ap-beijing.myqcloud.com/gg.jpg"
