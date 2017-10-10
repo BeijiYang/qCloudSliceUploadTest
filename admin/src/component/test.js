@@ -388,9 +388,6 @@ class Test extends Component {
           if (fileAlreadyExist.length !== 0) {
             message.error(`已存在同名文件，${file.name}未上传`)
             return
-            console.log("++++++++++++++++++++++++");
-            console.log(fileAlreadyExist);
-            // console.log(file);
           }
 
 
