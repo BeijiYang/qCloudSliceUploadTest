@@ -132,20 +132,6 @@ class Test extends Component {
         console.log(err)
       }
     })
-
-    // axios.post(`${config.api}/sliceUploadFile`)
-    // .then(
-    //   res => {
-    //     console.log(res)
-    //   }
-    // )
-    // .catch(err => {
-    //   if (err.response) {
-    //     console.log(err.response.data.err)
-    //   } else {
-    //     console.log(err)
-    //   }
-    // })
   }
 
   //指定的文件夹名
@@ -308,66 +294,6 @@ class Test extends Component {
       key: 'ETag',
       render: (text, record, index) => {
 
-        // // 重命名
-        // const onRename = function () {
-        //   console.log('rename');
-        //   var AppId = config.AppId;
-        //   var Bucket = config.Bucket;
-        //   if (config.Bucket.indexOf('-') > -1) {
-        //     console.log(">>>>>");
-        //     var arr = config.Bucket.split('-');
-        //     Bucket = arr[0];
-        //     AppId = arr[1];
-        //   }
-        //   cos.putObjectCopy({
-        //     Bucket: config.Bucket,
-        //     Region: config.Region,
-        //     Key: 'OOOXXX',
-        //     CopySource: Bucket + '-' + AppId + '.cos.' + config.Region + '.myqcloud.com/' + encodeURI(record.Key),
-        //     MetadataDirective : 'Replaced'
-        //   }, function (err, data) {
-        //     if(err) {
-        //       console.log(err);
-        //       message.error('副本创建失败')
-        //     } else {
-        //       console.log(data);
-        //       // message.success(`已：${record.Key}`)
-        //
-        //       const delParams = {
-        //         Bucket: `${config.Bucket}`,
-        //         Region: `${config.Region}`,                       /* 必须 */
-        //         Key : record.Key                                  /* 必须 */
-        //       };
-        //
-        //       cos.deleteObject(delParams, function(err, data) {
-        //         if(err) {
-        //           console.log(err);
-        //           message.error('源文件删除失败')
-        //         } else {
-        //           console.log(data);
-        //           axios.get(`${config.api}/bucket`)
-        //           .then(
-        //             res => {
-        //               that.setState({
-        //                 contents: res.data.Contents
-        //               })
-        //               console.log(that.state.contents)
-        //             }
-        //           )
-        //           .catch(err => {
-        //             if (err.response) {
-        //               console.log(err.response.data.err)
-        //             } else {
-        //               console.log(err)
-        //             }
-        //           })
-        //           message.success('重命名成功')
-        //         }
-        //       });
-        //     }
-        //   });
-        // }
-
         const onDelete = function () {
           // showDeleteConfirm() {
             confirm({
@@ -500,31 +426,6 @@ class Test extends Component {
               //打印内容：
               // test.js:160 {"loaded":5947392,"total":11074706,"speed":5198769.23,"percent":0.53}
 
-              //进度条信息++++++++++
-              // let percent = progressData.percent*100
-              //
-              // //运用数组栈方法来更新进度信息
-              // let [ ...clonedTempProgress ] = that.state.progress
-              // console.log(that.state.progress);
-              //
-              // let newUploadFileInfo = clonedTempProgress.pop()
-              // //更新进度
-              // newUploadFileInfo.percent = percent
-              //
-              // if (percent < 100) {
-              //   newUploadFileInfo.status = 'active'
-              // } else if (percent === 100) {
-              //   newUploadFileInfo.status = 'success'
-              // }
-              //
-              // clonedTempProgress.push(newUploadFileInfo)
-              //
-              // that.setState({
-              //   progress: clonedTempProgress
-              // })
-              // console.log(that.state.progress)
-              // ++++++++++++++
-
               //当多个文件--------
               let [ ...clonedTempProgress ] = that.state.progress
 
@@ -541,17 +442,6 @@ class Test extends Component {
 
               let percent = progressData.percent*100
 
-              // thisFilesProgress.percent = percent
-              // //运用数组栈方法来更新进度信息
-              // let [ ...clonedTempProgress ] = that.state.progress
-              // console.log(that.state.progress);
-              //
-              // let newUploadFileInfo = clonedTempProgress.filter(
-              //   item => {
-              //     return item.uid === file.uid
-              //   }
-              // )
-
               // 精确更新进度
               newUploadFileInfo.percent = percent
 
@@ -561,17 +451,12 @@ class Test extends Component {
                 newUploadFileInfo.status = 'success'
               }
 
-              // clonedTempProgress.push(newUploadFileInfo)
               clonedTempProgress[thisFilesIndex] = newUploadFileInfo
 
               that.setState({
                 progress: clonedTempProgress
               })
               console.log(that.state.progress)
-
-
-              // --------
-
             }
           };
           console.log(typeof file);
@@ -616,12 +501,6 @@ class Test extends Component {
           });
           //cos-js-sdk 分块上传 结束
         }
-        // if (status === 'done') {
-        //   message.success(`${info.file.name} file uploaded successfully.`);
-        // } else if (status === 'error') {
-        //   message.error(`${info.file.name} file upload failed.`);
-        // }
-
       },//onchange结束
     }
 
@@ -649,8 +528,6 @@ class Test extends Component {
 
           </div>
         </Content>
-
-        {/* <CollectionsPage oldName={'oldName'}/> */}
 
         {/* 进度条 */}
         {
@@ -694,4 +571,4 @@ class Test extends Component {
 }
 
 export default Test
-// 已经获得了必要参数，Name和Key，传递给content组件就行了。后者组织成	testbucket-1252891333.file.myqcloud.com/vvv.jpg
+// 已经获得了必要参数，Name和Key，传递给content组件就行了。后者组织成类似	testbucket-1252891333.file.myqcloud.com/vvv.jpg
